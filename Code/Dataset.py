@@ -9,6 +9,7 @@ import scipy.io as sio
 from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
 
+
 class BCIDataset(Dataset):
     def __init__(self, data_path, is_standard=True):
         """
@@ -36,10 +37,10 @@ class BCIDataset(Dataset):
             torch.Tensor: Processed labels.
         """
         # Constants
-        fs = 250          # Sampling rate
+        fs = 250  # Sampling rate
         t1 = int(1.5 * fs)  # Start time point
-        t2 = int(6 * fs)    # End time point
-        T = t2 - t1         # Length of the MI trial (samples or time_points)
+        t2 = int(6 * fs)  # End time point
+        T = t2 - t1  # Length of the MI trial (samples or time_points)
 
         # Load raw data and preprocess
         self.X, self.y = self.load_data(path)
@@ -54,7 +55,8 @@ class BCIDataset(Dataset):
 
         return torch.tensor(self.X), torch.tensor(self.y)
 
-    def load_data(self, data_path):
+    @staticmethod
+    def load_data(data_path):
         """
         Load EEG data from the given file.
 
@@ -80,7 +82,7 @@ class BCIDataset(Dataset):
         a_data = a['data']
 
         # Process loaded data
-        for ii in range(0, a_data.size):
+        for ii in range(a_data.size):
             a_data1 = a_data[0, ii]
             a_data2 = [a_data1[0, 0]]
             a_data3 = a_data2[0]
@@ -90,15 +92,15 @@ class BCIDataset(Dataset):
             a_artifacts = a_data3[5]
 
             for trial in range(0, a_trial.size):
-                if a_artifacts[trial] != 0:
+                if a_artifacts[trial]:
                     continue
                 data_return[NO_valid_trial, :, :] = np.transpose(
-                    a_X[int(a_trial[trial]):(int(a_trial[trial]) + window_length), :22]
+                    a_X[int(a_trial[trial]):(int(a_trial[trial]) + window_length), :n_channels]
                 )
                 class_return[NO_valid_trial] = int(a_y[trial])
                 NO_valid_trial += 1
 
-        return data_return[0:NO_valid_trial, :, :], class_return[0:NO_valid_trial]
+        return data_return[:NO_valid_trial, :, :], class_return[:NO_valid_trial]
 
     def standardize_data(self):
         """

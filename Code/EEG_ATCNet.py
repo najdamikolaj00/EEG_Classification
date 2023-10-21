@@ -12,12 +12,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernLength=64, poolSize=8, D=2, dropout=0.1):
         super(ConvBlock, self).__init__()
         F1 = out_channels
         F2 = F1 * D
-        self.conv1 = nn.Conv2d(in_channels, F1, kernel_size=(kernLength, 1), padding='same')  # Use 'same' for automatic padding
+        self.conv1 = nn.Conv2d(in_channels, F1, kernel_size=(kernLength, 1),
+                               padding='same')  # Use 'same' for automatic padding
         self.bn1 = nn.BatchNorm2d(F1)
         self.depthwise_conv = nn.Conv2d(F1, F2, kernel_size=(1, in_channels), groups=F1, bias=False)
         self.bn2 = nn.BatchNorm2d(F2)
@@ -44,6 +46,7 @@ class ConvBlock(nn.Module):
         x = self.dropout2(x)
         return x
 
+
 class TCNBlock(nn.Module):
     def __init__(self, input_dimension, depth, kernel_size, filters, dropout):
         super(TCNBlock, self).__init__()
@@ -55,7 +58,9 @@ class TCNBlock(nn.Module):
 
         for i in range(depth):
             dilation_size = 2 ** (i + 1)
-            self.layers.append(nn.Conv1d(filters, filters, kernel_size=kernel_size, dilation=dilation_size, padding=dilation_size, bias=False))
+            self.layers.append(
+                nn.Conv1d(filters, filters, kernel_size=kernel_size, dilation=dilation_size, padding=dilation_size,
+                          bias=False))
             self.layers.append(nn.BatchNorm1d(filters))
             self.layers.append(nn.Dropout(dropout))
             self.layers.append(nn.ReLU())
@@ -64,14 +69,15 @@ class TCNBlock(nn.Module):
         for layer in self.layers:
             x = layer(x)
         return x
-    
+
+
 class ATCNet(nn.Module):
-    def __init__(self, in_chans=22, n_windows=3, 
+    def __init__(self, in_chans=22, n_windows=3,
                  eegn_F1=16, eegn_kernelSize=64, eegn_poolSize=8, eegn_dropout=0.3,
                  tcn_kernelSize=4, tcn_filters=32, tcn_dropout=0.3,
                  tcn_activation='relu', fuse='average'):
         super(ATCNet, self).__init__()
-        self.conv_block = ConvBlock(in_chans, eegn_F1, eegn_kernelSize, eegn_poolSize, eegn_dropout)
+        self.conv_block = ConvBlock(in_chans, eegn_F1, eegn_kernelSize, eegn_poolSize, dropout=eegn_dropout)
         self.tcn_block = TCNBlock(eegn_F1, tcn_filters, tcn_kernelSize, tcn_dropout, tcn_activation)
         self.n_windows = n_windows
         self.fuse = fuse
@@ -81,9 +87,8 @@ class ATCNet(nn.Module):
         x = x[:, :, -1, :]  # Select last channel of last time step
 
         sw_concat = []
-        for i in range(self.n_windows):
-            st = i
-            end = x.shape[1] - self.n_windows + i + 1
+        for st in range(self.n_windows):
+            end = x.shape[1] - self.n_windows + st + 1
 
             block = x[:, st:end, :]
             block = self.tcn_block(block)
