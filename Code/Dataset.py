@@ -13,11 +13,11 @@ from sklearn.preprocessing import StandardScaler
 class BCIDataset(Dataset):
     def __init__(self, data_path, is_standard=True):
         """
-        Custom dataset class for EEG (Electroencephalography) data.
-        
+        Custom dataset class for EEG (Electroencephalography) Data.
+
         Parameters:
-            data_path (str): Path to the EEG data file.
-            is_standard (bool): Whether to standardize the data. Default is True.
+            data_path (str): Path to the EEG Data file.
+            is_standard (bool): Whether to standardize the Data. Default is True.
         """
         self.X, self.y = self.get_data(data_path, is_standard)
 
@@ -26,14 +26,14 @@ class BCIDataset(Dataset):
 
     def get_data(self, path, is_standard=True):
         """
-        Load and preprocess EEG data.
+        Load and preprocess EEG Data.
 
         Parameters:
-            path (str): Path to the EEG data file.
-            is_standard (bool): Whether to standardize the data. Default is True.
+            path (str): Path to the EEG Data file.
+            is_standard (bool): Whether to standardize the Data. Default is True.
 
         Returns:
-            torch.Tensor: Processed input data.
+            torch.Tensor: Processed input Data.
             torch.Tensor: Processed labels.
         """
         # Constants
@@ -42,14 +42,14 @@ class BCIDataset(Dataset):
         t2 = int(6 * fs)  # End time point
         T = t2 - t1  # Length of the MI trial (samples or time_points)
 
-        # Load raw data and preprocess
+        # Load raw Data and preprocess
         self.X, self.y = self.load_data(path)
 
-        # Select time window and reshape data
+        # Select time window and reshape Data
         self.N, self.N_ch, _ = self.X.shape
         self.X = self.X[:, :, t1:t2].reshape(self.N, 1, self.N_ch, T)
 
-        # Standardize the data if required
+        # Standardize the Data if required
         if is_standard:
             self.X = self.standardize_data()
 
@@ -58,30 +58,30 @@ class BCIDataset(Dataset):
     @staticmethod
     def load_data(data_path):
         """
-        Load EEG data from the given file.
+        Load EEG Data from the given file.
 
         Parameters:
-            data_path (str): Path to the EEG data file.
+            data_path (str): Path to the EEG Data file.
 
         Returns:
-            np.ndarray: Loaded EEG data.
+            np.ndarray: Loaded EEG Data.
         """
         # Constants
         n_channels = 22
         n_tests = 6 * 48
         window_length = 7 * 250
 
-        # Initialize arrays for data and labels
+        # Initialize arrays for Data and labels
         class_return = np.zeros(n_tests)
         data_return = np.zeros((n_tests, n_channels, window_length))
 
         NO_valid_trial = 0
 
-        # Load data from the provided file
+        # Load Data from the provided file
         a = sio.loadmat(data_path)
-        a_data = a['data']
+        a_data = a["Data"]
 
-        # Process loaded data
+        # Process loaded Data
         for ii in range(a_data.size):
             a_data1 = a_data[0, ii]
             a_data2 = [a_data1[0, 0]]
@@ -95,7 +95,10 @@ class BCIDataset(Dataset):
                 if a_artifacts[trial]:
                     continue
                 data_return[NO_valid_trial, :, :] = np.transpose(
-                    a_X[int(a_trial[trial]):(int(a_trial[trial]) + window_length), :n_channels]
+                    a_X[
+                        int(a_trial[trial]) : (int(a_trial[trial]) + window_length),
+                        :n_channels,
+                    ]
                 )
                 class_return[NO_valid_trial] = int(a_y[trial])
                 NO_valid_trial += 1
@@ -104,10 +107,10 @@ class BCIDataset(Dataset):
 
     def standardize_data(self):
         """
-        Standardize the data using StandardScaler.
+        Standardize the Data using StandardScaler.
 
         Returns:
-            np.ndarray: Standardized data.
+            np.ndarray: Standardized Data.
         """
         # X :[Trials, MI-tasks, Channels, Time points]
         for j in range(self.N_ch):

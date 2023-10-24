@@ -1,6 +1,6 @@
-'''
+"""
 Reference: https://arxiv.org/abs/1706.02633 
-'''
+"""
 
 import torch.nn as nn
 from torchgan.models import Generator, Discriminator
@@ -9,18 +9,20 @@ from Code.RNN_Classifier.layers import rnn_layer
 
 
 class RGANGenerator(Generator):
-    def __init__(self,
-                 sequence_length,
-                 output_size,
-                 hidden_size=None,
-                 noise_size=None,
-                 num_layers=1,
-                 dropout=0,
-                 rnn_nonlinearity='tanh',
-                 rnn_type='rnn',
-                 input_size=None,
-                 last_layer=None,
-                 **kwargs):
+    def __init__(
+        self,
+        sequence_length,
+        output_size,
+        hidden_size=None,
+        noise_size=None,
+        num_layers=1,
+        dropout=0,
+        rnn_nonlinearity="tanh",
+        rnn_type="rnn",
+        input_size=None,
+        last_layer=None,
+        **kwargs
+    ):
         """Recursive GAN (Generator) implementation with RNN cells.
 
         Layers:
@@ -42,7 +44,7 @@ class RGANGenerator(Generator):
                 Defined by the real dataset.
             hidden_size (int, optional): Size of RNN output.
                 Defaults to output_size.
-            noise_size (int, optional): Size of noise used to generate fake data.
+            noise_size (int, optional): Size of noise used to generate fake Data.
                 Defaults to output_size.
             num_layers (int, optional): Number of stacked RNNs in rnn.
             dropout (float, optional): Dropout probability for rnn layers.
@@ -53,7 +55,6 @@ class RGANGenerator(Generator):
             input_size (int, optional): Input size of RNN, defaults to noise_size.
             last_layer (Module, optional): Last layer of the discriminator.
         """
-
 
         # Defaults
         noise_size = noise_size or output_size
@@ -75,23 +76,21 @@ class RGANGenerator(Generator):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        # Total size of z that will be sampled. Later, in the forward 
+        # Total size of z that will be sampled. Later, in the forward
         # method, we resize to (batch_size, sequence_length, noise_size).
-        # TODO: Any resizing of z is valid as long as the total size 
-        #       remains sequence_length*noise_size. How does this affect
-        #       the performance of the RNN?
-        self.encoding_dims = sequence_length*noise_size
+        self.encoding_dims = sequence_length * noise_size
 
-        super(RGANGenerator, self).__init__(self.encoding_dims,
-                                            self.label_type)
+        super(RGANGenerator, self).__init__(self.encoding_dims, self.label_type)
 
         # Build RNN layer
-        self.rnn = rnn_layer(input_size=input_size,
-                             hidden_size=hidden_size,
-                             num_layers=num_layers,
-                             dropout=dropout,
-                             rnn_type=rnn_type,
-                             nonlinearity=rnn_nonlinearity)
+        self.rnn = rnn_layer(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            dropout=dropout,
+            rnn_type=rnn_type,
+            nonlinearity=rnn_nonlinearity,
+        )
         self.dropout = nn.Dropout(dropout)
         # self.batchnorm = nn.BatchNorm1d(hidden_size)
         self.linear = nn.Linear(hidden_size, output_size)
@@ -112,20 +111,22 @@ class RGANGenerator(Generator):
 
 
 class RGANDiscriminator(Discriminator):
-    def __init__(self,
-                 sequence_length,
-                 input_size,
-                 hidden_size=None,
-                 num_layers=1,
-                 dropout=0,
-                 rnn_nonlinearity='tanh',
-                 rnn_type='rnn',
-                 last_layer=None,
-                 **kwargs):
+    def __init__(
+        self,
+        sequence_length,
+        input_size,
+        hidden_size=None,
+        num_layers=1,
+        dropout=0,
+        rnn_nonlinearity="tanh",
+        rnn_type="rnn",
+        last_layer=None,
+        **kwargs
+    ):
         """Recursive GAN (Discriminator) implementation with RNN cells.
 
         Layers:
-            RNN (with activation, multiple layers): 
+            RNN (with activation, multiple layers):
                 input:  (batch_size, sequence_length, input_size)
                 output: (batch_size, sequence_length, hidden_size)
 
@@ -139,7 +140,7 @@ class RGANDiscriminator(Discriminator):
         Args:
             sequence_length (int): Number of points in the sequence.
             input_size (int): Size of input (usually the last tensor dimension).
-            hidden_size (int, optional): Size of hidden layers in rnn. 
+            hidden_size (int, optional): Size of hidden layers in rnn.
                 If None, defaults to input_size.
             num_layers (int, optional): Number of stacked RNNs in rnn.
             dropout (float, optional): Dropout probability for rnn layers.
@@ -167,16 +168,17 @@ class RGANDiscriminator(Discriminator):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        super(RGANDiscriminator, self).__init__(self.input_size,
-                                                self.label_type)
+        super(RGANDiscriminator, self).__init__(self.input_size, self.label_type)
 
         # Build RNN layer
-        self.rnn = rnn_layer(input_size=input_size,
-                             hidden_size=hidden_size,
-                             num_layers=num_layers,
-                             dropout=dropout,
-                             rnn_type=rnn_type,
-                             nonlinearity=rnn_nonlinearity)
+        self.rnn = rnn_layer(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            dropout=dropout,
+            rnn_type=rnn_type,
+            nonlinearity=rnn_nonlinearity,
+        )
         self.dropout = nn.Dropout(dropout)
         self.linear = nn.Linear(hidden_size, 1)
         self.last_layer = last_layer
