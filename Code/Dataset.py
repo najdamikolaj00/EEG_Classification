@@ -47,7 +47,7 @@ class BCIDataset(Dataset):
 
         # Select time window and reshape data
         self.N, self.N_ch, _ = self.X.shape
-        self.X = self.X[:, :, t1:t2].reshape(self.N, 1, self.N_ch, T)
+        self.X = self.X[:, :, t1:t2].reshape(self.N, self.N_ch, T)
 
         # Standardize the data if required
         if is_standard:
@@ -79,7 +79,7 @@ class BCIDataset(Dataset):
 
         # Load data from the provided file
         a = sio.loadmat(data_path)
-        a_data = a["Data"]
+        a_data = a["data"]
 
         # Process loaded data
         for ii in range(a_data.size):
@@ -115,8 +115,8 @@ class BCIDataset(Dataset):
         # X :[Trials, MI-tasks, Channels, Time points]
         for j in range(self.N_ch):
             scaler = StandardScaler()
-            scaler.fit(self.X[:, 0, j, :])
-            self.X[:, 0, j, :] = scaler.transform(self.X[:, 0, j, :])
+            scaler.fit(self.X[:, j, :])
+            self.X[:, j, :] = scaler.transform(self.X[:, j, :])
 
         return self.X
 

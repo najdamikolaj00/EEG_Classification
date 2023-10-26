@@ -13,6 +13,53 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class ATCNet(nn.Module):
+    def __init__(
+        self,
+        in_chans=22,
+        n_windows=3,
+        eegn_F1=16,
+        eegn_kernelSize=64,
+        eegn_poolSize=8,
+        eegn_dropout=0.3,
+        tcn_kernelSize=4,
+        tcn_filters=32,
+        tcn_dropout=0.3,
+        tcn_activation="relu",
+        fuse="average",
+    ):
+        super(ATCNet, self).__init__()
+        self.conv_block = ConvBlock(
+            in_chans, eegn_F1, eegn_kernelSize, eegn_poolSize, dropout=eegn_dropout
+        )
+        self.tcn_block = TCNBlock(
+            eegn_F1, 2, tcn_kernelSize, dropout=tcn_dropout, filters=tcn_filters
+        )
+        self.n_windows = n_windows
+        self.fuse = fuse
+
+    def forward(self, x):
+        x = self.conv_block(x)
+        x = x[:, :, -1, :]  # Select last channel of last time step
+
+        sw_concat = []
+        for st in range(self.n_windows):
+            end = x.shape[1] - self.n_windows + st + 1
+
+            block = x[:, st:end, :]
+            block = self.tcn_block(block)
+            block = block[:, -1, :]
+
+            sw_concat.append(block)
+
+        if self.fuse == "average":
+            sw_concat = torch.mean(torch.stack(sw_concat), dim=0)
+        elif self.fuse == "concat":
+            sw_concat = torch.cat(sw_concat, dim=1)
+
+        return F.softmax(sw_concat, dim=1)
+
+
 class ConvBlock(nn.Module):
     def __init__(
         self,
@@ -28,11 +75,10 @@ class ConvBlock(nn.Module):
         F2 = F1 * D
         # Block 1
         self.conv1 = nn.Conv2d(
-            in_channels=F1,
+            in_channels=in_chans,
             out_channels=F1,
             kernel_size=(kernLength, 1),
             padding="same",
-            bias=False,
         )
         self.bn1 = nn.BatchNorm2d(F1)
 
@@ -72,10 +118,9 @@ class ConvBlock(nn.Module):
 
 
 class TCNBlock(nn.Module):
-    def __init__(
-        self, input_layer, input_dimension, depth, kernel_size, filters, dropout
-    ):
+    def __init__(self, input_layer, depth, kernel_size, filters, dropout=0.2):
         super(TCNBlock, self).__init__()
+        self.layers = []
         # Block 1
         self.conv1 = nn.Conv1d(
             input_layer,
@@ -86,7 +131,7 @@ class TCNBlock(nn.Module):
             bias=True,
         )
         self.bn1 = nn.BatchNorm1d(filters)
-        self.linear = nn.Linear(filters)
+        self.linear = nn.Linear(filters, filters)
         self.dropout = nn.Dropout(dropout)
 
         # Block 2
@@ -99,12 +144,12 @@ class TCNBlock(nn.Module):
             bias=True,
         )
         self.bn2 = nn.BatchNorm1d(filters)
-        self.linear = nn.Linear(filters)
+        self.linear = nn.Linear(filters, filters)
         self.dropout = nn.Dropout(dropout)
 
         for i in range(depth):
             dilation_size = 2 ** (i + 1)
-            self.layers.append(
+            self.layers += [
                 nn.Conv1d(
                     filters,
                     filters,
@@ -112,11 +157,22 @@ class TCNBlock(nn.Module):
                     dilation=dilation_size,
                     padding=dilation_size,
                     bias=False,
-                )
-            )
-            self.nn.BatchNorm1d(filters)
-            self.nn.Dropout(dropout)
-            self.nn.ReLU()
+                ),
+                nn.BatchNorm1d(filters),
+                nn.Dropout(dropout),
+                nn.ReLU(),
+                nn.Conv1d(
+                    filters,
+                    filters,
+                    kernel_size=kernel_size,
+                    dilation=dilation_size,
+                    padding=dilation_size,
+                    bias=False,
+                ),
+                nn.BatchNorm1d(filters),
+                nn.Dropout(dropout),
+                nn.ReLU(),
+            ]
 
     def forward(self, x):
         for layer in self.layers:
