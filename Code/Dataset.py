@@ -14,7 +14,7 @@ class BCIDataset(Dataset):
     def __init__(self, data_path, is_standard=True):
         """
         Custom dataset class for EEG (Electroencephalography) data.
-        
+
         Parameters:
             data_path (str): Path to the EEG data file.
             is_standard (bool): Whether to standardize the data. Default is True.
@@ -79,7 +79,7 @@ class BCIDataset(Dataset):
 
         # Load data from the provided file
         a = sio.loadmat(data_path)
-        a_data = a['data']
+        a_data = a["Data"]
 
         # Process loaded data
         for ii in range(a_data.size):
@@ -95,7 +95,10 @@ class BCIDataset(Dataset):
                 if a_artifacts[trial]:
                     continue
                 data_return[NO_valid_trial, :, :] = np.transpose(
-                    a_X[int(a_trial[trial]):(int(a_trial[trial]) + window_length), :n_channels]
+                    a_X[
+                        int(a_trial[trial]) : (int(a_trial[trial]) + window_length),
+                        :n_channels,
+                    ]
                 )
                 class_return[NO_valid_trial] = int(a_y[trial])
                 NO_valid_trial += 1

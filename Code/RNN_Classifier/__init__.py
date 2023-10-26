@@ -6,12 +6,12 @@ from pathlib import Path
 
 
 def get_project_root() -> Path:
-        """Returns project root folder."""
-        return Path(__file__).parent.parent
+    """Returns project root folder."""
+    return Path(__file__).parent.parent
 
 
 def get_data_dir() -> Path:
-    return get_project_root() / 'data'
+    return get_project_root() / "Data"
 
 
 def make_logger(file_: str = "NO_FILE") -> logging.Logger:
