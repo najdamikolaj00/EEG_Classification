@@ -37,6 +37,7 @@ class BCIDataset(Dataset):
             torch.Tensor: Processed labels.
         """
         # Constants
+        n_channels = 1
         fs = 250  # Sampling rate
         t1 = int(1.5 * fs)  # Start time point
         t2 = int(6 * fs)  # End time point
@@ -47,13 +48,13 @@ class BCIDataset(Dataset):
 
         # Select time window and reshape data
         self.N, self.N_ch, _ = self.X.shape
-        self.X = self.X[:, :, t1:t2].reshape(self.N, self.N_ch, T)
+        self.X = self.X[:, :, t1:t2].reshape(self.N, n_channels, self.N_ch, T)
 
         # Standardize the data if required
         if is_standard:
             self.X = self.standardize_data()
 
-        return torch.tensor(self.X), torch.tensor(self.y)
+        return torch.tensor(self.X).float(), torch.tensor(self.y)
 
     @staticmethod
     def load_data(data_path):
@@ -112,11 +113,11 @@ class BCIDataset(Dataset):
         Returns:
             np.ndarray: Standardized data.
         """
-        # X :[Trials, MI-tasks, Channels, Time points]
+        # X :[Trials, Filters=1, Channels, Time points]
         for j in range(self.N_ch):
             scaler = StandardScaler()
-            scaler.fit(self.X[:, j, :])
-            self.X[:, j, :] = scaler.transform(self.X[:, j, :])
+            scaler.fit(self.X[:, 0, j, :])
+            self.X[:, 0, j, :] = scaler.transform(self.X[:, 0, j, :])
 
         return self.X
 

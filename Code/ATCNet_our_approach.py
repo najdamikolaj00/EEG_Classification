@@ -17,13 +17,13 @@ class ATCNet(nn.Module):
     def __init__(
         self,
         in_chans=22,
-        n_windows=3,
+        n_windows=1,  # TODO: doesn't depend on window length and input length does
         eegn_F1=16,
         eegn_kernelSize=64,
         eegn_poolSize=8,
         eegn_dropout=0.3,
         tcn_kernelSize=4,
-        tcn_filters=32,
+        tcn_filters=32,  # TODO: doesn't depend on window length and input length does
         tcn_dropout=0.3,
         tcn_activation="relu",
         fuse="average",
@@ -75,7 +75,7 @@ class ConvBlock(nn.Module):
         F2 = F1 * D
         # Block 1
         self.conv1 = nn.Conv2d(
-            in_channels=in_chans,
+            in_channels=1,
             out_channels=F1,
             kernel_size=(kernLength, 1),
             padding="same",
@@ -92,13 +92,17 @@ class ConvBlock(nn.Module):
         )
         self.bn2 = nn.BatchNorm2d(F2)
         self.elu = nn.ELU()
-        self.avg_pool = nn.AvgPool2d(kernel_size=(poolSize, 1))
+        self.avg_pool = nn.AvgPool2d(
+            kernel_size=(poolSize, 1), stride=(1, 1)
+        )  # TODO: figure out how stride is translated, default was the same as kernel
         self.dropout = nn.Dropout(dropout)
 
         # Block 3
         self.conv2 = nn.Conv2d(F2, F2, kernel_size=(16, 1), padding="same")
         self.bn3 = nn.BatchNorm2d(F2)
-        self.avg_pool2 = nn.AvgPool2d(kernel_size=(poolSize, 1))
+        self.avg_pool2 = nn.AvgPool2d(
+            kernel_size=(poolSize, 1), stride=(1, 1)
+        )  # TODO: figure out how stride is translated, default was the same as kernel
         self.dropout2 = nn.Dropout(dropout)
 
     def forward(self, x):
