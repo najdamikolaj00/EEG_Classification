@@ -14,7 +14,7 @@ class BCIDataset(Dataset):
     def __init__(self, data_path, is_standard=True):
         """
         Custom dataset class for EEG (Electroencephalography) data.
-        
+
         Parameters:
             data_path (str): Path to the EEG data file.
             is_standard (bool): Whether to standardize the data. Default is True.
@@ -37,6 +37,7 @@ class BCIDataset(Dataset):
             torch.Tensor: Processed labels.
         """
         # Constants
+        n_channels = 1
         fs = 250  # Sampling rate
         t1 = int(1.5 * fs)  # Start time point
         t2 = int(6 * fs)  # End time point
@@ -47,13 +48,13 @@ class BCIDataset(Dataset):
 
         # Select time window and reshape data
         self.N, self.N_ch, _ = self.X.shape
-        self.X = self.X[:, :, t1:t2].reshape(self.N, 1, self.N_ch, T)
+        self.X = self.X[:, :, t1:t2].reshape(self.N, n_channels, self.N_ch, T)
 
         # Standardize the data if required
         if is_standard:
             self.X = self.standardize_data()
 
-        return torch.tensor(self.X), torch.tensor(self.y)
+        return torch.tensor(self.X).float(), torch.tensor(self.y)
 
     @staticmethod
     def load_data(data_path):
@@ -79,7 +80,7 @@ class BCIDataset(Dataset):
 
         # Load data from the provided file
         a = sio.loadmat(data_path)
-        a_data = a['data']
+        a_data = a["data"]
 
         # Process loaded data
         for ii in range(a_data.size):
@@ -95,7 +96,10 @@ class BCIDataset(Dataset):
                 if a_artifacts[trial]:
                     continue
                 data_return[NO_valid_trial, :, :] = np.transpose(
-                    a_X[int(a_trial[trial]):(int(a_trial[trial]) + window_length), :n_channels]
+                    a_X[
+                        int(a_trial[trial]) : (int(a_trial[trial]) + window_length),
+                        :n_channels,
+                    ]
                 )
                 class_return[NO_valid_trial] = int(a_y[trial])
                 NO_valid_trial += 1
@@ -109,7 +113,7 @@ class BCIDataset(Dataset):
         Returns:
             np.ndarray: Standardized data.
         """
-        # X :[Trials, MI-tasks, Channels, Time points]
+        # X :[Trials, Filters=1, Channels, Time points]
         for j in range(self.N_ch):
             scaler = StandardScaler()
             scaler.fit(self.X[:, 0, j, :])

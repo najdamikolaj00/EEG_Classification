@@ -10,14 +10,16 @@ from torch.nn import BCEWithLogitsLoss
 
 
 class BinaryClassificationTrainer(object):
-    def __init__(self,
-                 model,
-                 optimizer,
-                 sampler_train=None,
-                 sampler_test=None,
-                 log_to_mlflow=True,
-                 loss_function=BCEWithLogitsLoss(),
-                 metrics_prepend=''):
+    def __init__(
+        self,
+        model,
+        optimizer,
+        sampler_train=None,
+        sampler_test=None,
+        log_to_mlflow=True,
+        loss_function=BCEWithLogitsLoss(),
+        metrics_prepend="",
+    ):
         self.optimizer = optimizer
         self.sampler_train = sampler_train
         self.sampler_test = sampler_test
@@ -40,13 +42,13 @@ class BinaryClassificationTrainer(object):
             if epoch % evaluate_interval == 0:
                 with torch.no_grad():
                     X_test, y_test = self.sampler_test.sample()
-                    metrics = self.evaluate(X_test, y_test, 
-                                            X_train, y_train)
-                    msg = f'[epoch {epoch}]'
-                    msg += ''.join(f'[{m} {np.round(v,4)}]' 
-                                   for m, v in metrics.items()
-                                   if m.endswith('balanced_accuracy') or
-                                   m.endswith('matheus'))
+                    metrics = self.evaluate(X_test, y_test, X_train, y_train)
+                    msg = f"[epoch {epoch}]"
+                    msg += "".join(
+                        f"[{m} {np.round(v,4)}]"
+                        for m, v in metrics.items()
+                        if m.endswith("balanced_accuracy") or m.endswith("matheus")
+                    )
 
     def evaluate(self, X_test, y_test, X_train, y_train):
         def _calculate(X, y, name):
@@ -57,27 +59,29 @@ class BinaryClassificationTrainer(object):
             return self.calculate_metrics(y_true, y_pred, logits, probs, name)
 
         mp = self.metrics_prepend
-        return {**_calculate(X_test, y_test, f'{mp}test'),
-                **_calculate(X_train, y_train, f'{mp}train')}
+        return {
+            **_calculate(X_test, y_test, f"{mp}test"),
+            **_calculate(X_train, y_train, f"{mp}train"),
+        }
 
-    def calculate_metrics(self, y_true, y_pred, logits, probs, name=''):
+    def calculate_metrics(self, y_true, y_pred, logits, probs, name=""):
         y_true_ = (y_true[:, 0] if self.tiled else y_true).cpu()
         y_pred_ = (y_pred.mode().values if self.tiled else y_pred).cpu()
 
-        mask_0 = (y_true_ == 0)
-        mask_1 = (y_true_ == 1)
+        mask_0 = y_true_ == 0
+        mask_1 = y_true_ == 1
 
         hits = tensor(y_true_ == y_pred_).float()
         bas = balanced_accuracy_score(y_true_, y_pred_)
         matthews = matthews_corrcoef(y_true_, y_pred_)
 
-        return {f'{name}_accuracy': hits.mean().item(), 
-                f'{name}_balanced_accuracy': bas,
-                f'{name}_accuracy_0': hits[mask_0].mean().item(), 
-                f'{name}_accuracy_1': hits[mask_1].mean().item(),
-                f'{name}_loss': self.loss_function(logits, y_true).item(),
-                f'{name}_loss_0': self.loss_function(logits[mask_0],
-                                                     y_true[mask_0]).item(),
-                f'{name}_loss_1': self.loss_function(logits[mask_1],
-                                                     y_true[mask_1]).item(),
-                f'{name}_matthews': matthews}
+        return {
+            f"{name}_accuracy": hits.mean().item(),
+            f"{name}_balanced_accuracy": bas,
+            f"{name}_accuracy_0": hits[mask_0].mean().item(),
+            f"{name}_accuracy_1": hits[mask_1].mean().item(),
+            f"{name}_loss": self.loss_function(logits, y_true).item(),
+            f"{name}_loss_0": self.loss_function(logits[mask_0], y_true[mask_0]).item(),
+            f"{name}_loss_1": self.loss_function(logits[mask_1], y_true[mask_1]).item(),
+            f"{name}_matthews": matthews,
+        }

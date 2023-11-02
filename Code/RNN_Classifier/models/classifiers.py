@@ -1,6 +1,6 @@
-'''
+"""
 Reference: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
-'''
+"""
 
 import torch.nn as nn
 
@@ -10,7 +10,7 @@ from Code.RNN_Classifier.utils import calc_conv_output_length
 
 class BinaryRNNClassifier(nn.Module):
     def __init__(self, sequence_length, **kwargs):
-        """Recursive NN for binary classification with linear 
+        """Recursive NN for binary classification with linear
         time-collapsing layers.
 
         Layers:
@@ -33,7 +33,7 @@ class BinaryRNNClassifier(nn.Module):
         super(BinaryRNNClassifier, self).__init__()
 
         # Default hidden_size to input_size.
-        hidden_size = kwargs.get('hidden_size', kwargs['input_size'])
+        hidden_size = kwargs.get("hidden_size", kwargs["input_size"])
 
         # See ward2icu.layers.rnn_layer for more information.
         self.rnn = rnn_layer(**kwargs)
@@ -47,18 +47,19 @@ class BinaryRNNClassifier(nn.Module):
 
 
 class BinaryCNNClassifier(nn.Module):
-    def __init__(self,
-                 input_size,
-                 input_length,
-                 kernel_size,
-                 n_layers=1,
-                 step_up=1,
-                 dropout_prob=0.5,
-                 channel_last=True,
-                 pool_size=None,
-                 **kwargs):
-        """ 1D CNN for binary classification. 
-        """
+    def __init__(
+        self,
+        input_size,
+        input_length,
+        kernel_size,
+        n_layers=1,
+        step_up=1,
+        dropout_prob=0.5,
+        channel_last=True,
+        pool_size=None,
+        **kwargs
+    ):
+        """1D CNN for binary classification."""
         # defaults
         pool_size = pool_size or kernel_size
 
@@ -71,29 +72,31 @@ class BinaryCNNClassifier(nn.Module):
         self.n_layers = n_layers
         super(BinaryCNNClassifier, self).__init__()
 
-        conv = Conv1dLayers(input_size,
-                            input_length,
-                            kernel_size,
-                            n_layers=n_layers,
-                            step_up=step_up,
-                            dropout_prob=dropout_prob,
-                            **kwargs)
+        conv = Conv1dLayers(
+            input_size,
+            input_length,
+            kernel_size,
+            n_layers=n_layers,
+            step_up=step_up,
+            dropout_prob=dropout_prob,
+            **kwargs
+        )
 
         maxpool = nn.MaxPool1d(pool_size)
         flatten = nn.Flatten()
-        flatten_output_size = (
-            conv.output_sizes[-1]*
-            calc_conv_output_length(maxpool, 
-                                    conv.output_lengths[-1])
+        flatten_output_size = conv.output_sizes[-1] * calc_conv_output_length(
+            maxpool, conv.output_lengths[-1]
         )
 
-        self.layers = nn.Sequential(conv,
-                                    maxpool,
-                                    flatten,
-                                    nn.Linear(flatten_output_size, flatten_output_size),
-                                    nn.LeakyReLU(0.2),
-                                    nn.Linear(flatten_output_size, 1),
-                                    nn.Sigmoid())
+        self.layers = nn.Sequential(
+            conv,
+            maxpool,
+            flatten,
+            nn.Linear(flatten_output_size, flatten_output_size),
+            nn.LeakyReLU(0.2),
+            nn.Linear(flatten_output_size, 1),
+            nn.Sigmoid(),
+        )
 
     def forward(self, x):
         if self.channel_last:
