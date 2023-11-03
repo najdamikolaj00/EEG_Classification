@@ -10,7 +10,7 @@ class LSTMModel(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes).to(torch.float64)
 
     def forward(self, x):
-        print(x.dtype)
+        #print(x.dtype)
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float64).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size, dtype=torch.float64).to(x.device)
         

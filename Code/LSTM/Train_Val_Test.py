@@ -11,20 +11,13 @@ from LSTM import LSTMModel
 
 def train_val_test(device, num_epochs, num_splits, batch_size):
 
-    train_dataset = BCIDataset(data_paths=['Data/A01T.mat', 'Data/A02T.mat'])
-    #print(train_dataset.__len__())
-    #train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
+    train_dataset = BCIDataset(data_paths=['Data/A01T.mat', 'Data/A02T.mat', 'Data/A03T.mat', 'Data/A04T.mat',
+                                           'Data/A05T.mat', 'Data/A06T.mat', 'Data/A07T.mat', 'Data/A08T.mat', 'Data/A09T.mat'])
 
-    # for idx, (data, label) in enumerate(train_dataloader):
-    #     print(data)
-    #     print(label)
-    #     print(data.shape)
-    #     print(label.shape)
-    #     print(data.dtype)
-    #     print(label.dtype)
-    #     if idx == 0:
-    #         break
+    #train_dataset = BCIDataset(data_paths=['Data/A01T.mat'])
+
     kf = KFold(n_splits=num_splits, shuffle=True, random_state=42)
+    print(len(train_dataset))
 
     for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
         print(f'FOLD {fold+1}')
@@ -36,7 +29,7 @@ def train_val_test(device, num_epochs, num_splits, batch_size):
         # Define data loaders for training and validation data in this fold
         train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_subsampler)
         val_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=val_subsampler)
-
+        print(len(train_loader))
         model = LSTMModel(input_size=num_channels, hidden_size=hidden_size, num_layers=num_layers, 
                         num_classes=num_classes).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -49,11 +42,11 @@ def train_val_test(device, num_epochs, num_splits, batch_size):
             for batch_idx, (data, targets) in enumerate(train_loader):
                 targets = targets.to(device)
                 data = data.to(device)
-
+                #print(batch_idx)
                 optimizer.zero_grad()
 
                 outputs = model(data)
-                print(targets.shape, outputs.shape)
+                #print(targets.shape, outputs.shape)
                 loss = criterion(outputs.float(), targets.long())
                 
                 loss.backward()
@@ -61,7 +54,7 @@ def train_val_test(device, num_epochs, num_splits, batch_size):
                 
                 current_loss += loss.item()
                 
-                if (batch_idx + 1) % 10 == 0:
+                if (batch_idx + 1) % 2 == 0:
                     print(f'Epoch [{epoch+1}/{num_epochs}], Step [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}')
                     current_loss = 0
         
@@ -97,7 +90,9 @@ def train_val_test(device, num_epochs, num_splits, batch_size):
 
 
     # Test loop
-    test_dataset = BCIDataset(data_paths=['Data/A01E.mat', 'Data/A02E.mat'])
+    #test_dataset = BCIDataset(data_paths=['Data/A01T.mat'])
+    test_dataset = BCIDataset(data_paths=['Data/A01T.mat', 'Data/A02T.mat', 'Data/A03T.mat', 'Data/A04T.mat'
+                                           , 'Data/A05T.mat', 'Data/A06T.mat', 'Data/A07T.mat', 'Data/A08T.mat', 'Data/A09T.mat'])
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     model.eval()
@@ -129,17 +124,20 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Hyperparameters, loop
-    num_epochs = 10
-    batch_size = 2
+    num_epochs = 40 # Can change it
+    batch_size = 32 # Can change it
+    lr = 0.001 # Can change it, like: (0.1, 0.01, 0.001, etc.)
+
+    # Hyperparameters - k-fold cross-validation
     num_splits = 5
 
     # Hyperparameters, model
-    input_size = 1125  # Number of time points
-    num_channels = 22  # Number of EEG channels
-    hidden_size = 64
-    num_layers = 2
+    input_size = 1125  # Number of time points - Can't change it
+    num_channels = 22  # Number of EEG channels - Can't change it
 
-    num_classes = 4
-    lr = 0.001
+    hidden_size = 64 # Can change it
+    num_layers = 2 # Can change it
+
+    num_classes = 4 # Number of classes - Can't change it
 
     train_val_test(device, num_epochs, num_splits, batch_size)
