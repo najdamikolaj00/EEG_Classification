@@ -23,7 +23,7 @@ class BCIDataset(Dataset):
         self.X, self.y = [], []
         self.get_data(is_standard)
         # Subtract 1 from labels for 0-based indexing
-        #self.y = (self.y - 1).to(torch.long)
+        # self.y = (self.y - 1).to(torch.long)
 
     def get_data(self, is_standard=True):
         """
@@ -55,11 +55,11 @@ class BCIDataset(Dataset):
             # Standardize the data if required
             if is_standard:
                 X = self.standardize_data(X)
-            
-            y = (y - 1)
+
+            y = y - 1
             self.X.append(X)
             self.y.append(y)
-        
+
         self.X = np.concatenate(self.X, axis=0)
         self.y = np.concatenate(self.y, axis=0)
 
