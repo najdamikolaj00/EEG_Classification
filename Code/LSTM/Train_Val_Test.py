@@ -11,8 +11,19 @@ from LSTM import LSTMModel
 
 def train_val_test(device, num_epochs, num_splits, batch_size):
 
-    train_dataset = BCIDataset(data_path='Data/A01T.mat')
+    train_dataset = BCIDataset(data_paths=['Data/A01T.mat', 'Data/A02T.mat'])
+    #print(train_dataset.__len__())
+    #train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
 
+    # for idx, (data, label) in enumerate(train_dataloader):
+    #     print(data)
+    #     print(label)
+    #     print(data.shape)
+    #     print(label.shape)
+    #     print(data.dtype)
+    #     print(label.dtype)
+    #     if idx == 0:
+    #         break
     kf = KFold(n_splits=num_splits, shuffle=True, random_state=42)
 
     for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
@@ -42,8 +53,8 @@ def train_val_test(device, num_epochs, num_splits, batch_size):
                 optimizer.zero_grad()
 
                 outputs = model(data)
-
-                loss = criterion(outputs, targets)
+                print(targets.shape, outputs.shape)
+                loss = criterion(outputs.float(), targets.long())
                 
                 loss.backward()
                 optimizer.step()
@@ -86,7 +97,7 @@ def train_val_test(device, num_epochs, num_splits, batch_size):
 
 
     # Test loop
-    test_dataset = BCIDataset(data_path='Data/A01E.mat')
+    test_dataset = BCIDataset(data_paths=['Data/A01E.mat', 'Data/A02E.mat'])
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     model.eval()

@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 class BCIDataset(Dataset):
-    def __init__(self, data_path, is_standard=True):
+    def __init__(self, data_paths, is_standard=True):
         """
         Custom dataset class for EEG (Electroencephalography) data.
 
@@ -19,12 +19,13 @@ class BCIDataset(Dataset):
             data_path (str): Path to the EEG data file.
             is_standard (bool): Whether to standardize the data. Default is True.
         """
-        self.X, self.y = self.get_data(data_path, is_standard)
-
+        self.data_paths = data_paths
+        self.X, self.y = [], []
+        self.get_data(is_standard)
         # Subtract 1 from labels for 0-based indexing
-        self.y = (self.y - 1).to(torch.long)
+        #self.y = (self.y - 1).to(torch.long)
 
-    def get_data(self, path, is_standard=True):
+    def get_data(self, is_standard=True):
         """
         Load and preprocess EEG data.
 
@@ -43,18 +44,26 @@ class BCIDataset(Dataset):
         t2 = int(6 * fs)  # End time point
         T = t2 - t1  # Length of the MI trial (samples or time_points)
 
-        # Load raw data and preprocess
-        self.X, self.y = self.load_data(path)
+        for path in self.data_paths:
+            # Load raw data and preprocess
+            X, y = self.load_data(path)
 
-        # Select time window and reshape data
-        self.N, self.N_ch, _ = self.X.shape
-        self.X = self.X[:, :, t1:t2].reshape(self.N, n_channels, self.N_ch, T)
+            # Select time window and reshape data
+            self.N, self.N_ch, _ = X.shape
+            X = X[:, :, t1:t2].reshape(self.N, n_channels, self.N_ch, T)
 
-        # Standardize the data if required
-        if is_standard:
-            self.X = self.standardize_data()
+            # Standardize the data if required
+            if is_standard:
+                X = self.standardize_data(X)
+            
+            y = (y - 1)
+            self.X.append(X)
+            self.y.append(y)
+        
+        self.X = np.concatenate(self.X, axis=0)
+        self.y = np.concatenate(self.y, axis=0)
 
-        return torch.tensor(self.X).float(), torch.tensor(self.y)
+        return self.X, self.y
 
     @staticmethod
     def load_data(data_path):
@@ -106,7 +115,7 @@ class BCIDataset(Dataset):
 
         return data_return[:NO_valid_trial, :, :], class_return[:NO_valid_trial]
 
-    def standardize_data(self):
+    def standardize_data(self, X):
         """
         Standardize the data using StandardScaler.
 
@@ -116,10 +125,10 @@ class BCIDataset(Dataset):
         # X :[Trials, Filters=1, Channels, Time points]
         for j in range(self.N_ch):
             scaler = StandardScaler()
-            scaler.fit(self.X[:, 0, j, :])
-            self.X[:, 0, j, :] = scaler.transform(self.X[:, 0, j, :])
+            scaler.fit(X[:, 0, j, :])
+            X[:, 0, j, :] = scaler.transform(X[:, 0, j, :])
 
-        return self.X
+        return X
 
     def __len__(self):
         """Get the total number of samples in the dataset."""
@@ -127,4 +136,4 @@ class BCIDataset(Dataset):
 
     def __getitem__(self, idx):
         """Get a sample (input, label) from the dataset."""
-        return self.X[idx].clone().detach(), self.y[idx].clone().detach()
+        return self.X[idx], self.y[idx]
