@@ -7,7 +7,7 @@ import torch
 from torch import optim
 from torchgan import losses
 
-from Code.Dataset import BCIDataset
+from Code.ATCNet.Dataset import BCIDataset
 from Code.RNN_Classifier.data import synthesis_df
 from Code.RNN_Classifier.metrics import classify, tstr, mean_feature_error
 from Code.RNN_Classifier.models.cnngan import CNNCGANGenerator, CNNCGANDiscriminator

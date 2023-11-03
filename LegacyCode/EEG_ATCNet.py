@@ -14,29 +14,45 @@ import torch.nn.functional as F
 
 
 class ConvBlock(nn.Module):
-
-    def __init__(self, input_layer, F1=4, kernLength=64, poolSize=8, D=2, in_chans=22, dropout=0.1):
+    def __init__(
+        self,
+        input_layer,
+        F1=4,
+        kernLength=64,
+        poolSize=8,
+        D=2,
+        in_chans=22,
+        dropout=0.1,
+    ):
         super(ConvBlock, self).__init__()
         F2 = F1 * D
 
         # Block 1
-        self.conv1 = nn.Conv2d(in_channels=F1, out_channels=F1, kernel_size=(kernLength, 1), 
-                               padding='same', bias=False)
+        self.conv1 = nn.Conv2d(
+            in_channels=F1,
+            out_channels=F1,
+            kernel_size=(kernLength, 1),
+            padding="same",
+            bias=False,
+        )
         self.bn1 = nn.BatchNorm2d(F1)
 
         # Block 2
-        self.depthwise_conv = nn.Conv2d(in_channels=F1, out_channels=F2, kernel_size=(1, in_chans),
-                                        groups=F1, bias=False)
+        self.depthwise_conv = nn.Conv2d(
+            in_channels=F1,
+            out_channels=F2,
+            kernel_size=(1, in_chans),
+            groups=F1,
+            bias=False,
+        )
 
         self.bn2 = nn.BatchNorm2d(F2)
         self.elu = nn.ELU()
         self.avg_pool = nn.AvgPool2d(kernel_size=(poolSize, 1))
         self.dropout = nn.Dropout(dropout)
 
-
         # Block 3
-        self.conv2 = nn.Conv2d(F2, F2, kernel_size=(16, 1), padding='same')
-
+        self.conv2 = nn.Conv2d(F2, F2, kernel_size=(16, 1), padding="same")
 
         self.bn3 = nn.BatchNorm2d(F2)
         self.avg_pool2 = nn.AvgPool2d(kernel_size=(poolSize, 1))
