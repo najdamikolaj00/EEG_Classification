@@ -17,7 +17,7 @@ class ATCNet(nn.Module):
     def __init__(
         self,
         in_chans=22,
-        n_classes=4,
+        num_classes=4,
         n_windows=5,
         eegn_F1=16,
         eegn_kernelSize=64,
@@ -49,7 +49,7 @@ class ATCNet(nn.Module):
             filters=tcn_filters,
         )
         self.n_windows = n_windows
-        self.dense = nn.Linear(tcn_filters, n_classes)
+        self.dense = nn.Linear(tcn_filters, num_classes)
         self.fuse = fuse
 
     def forward(self, x):
@@ -117,6 +117,7 @@ class ConvBlock(nn.Module):
         self.dropout2 = nn.Dropout(dropout)
 
     def forward(self, x):
+        x = torch.tensor(x).float()
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.depthwise_conv(x)

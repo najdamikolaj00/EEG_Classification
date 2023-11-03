@@ -1,9 +1,0 @@
-Data/A01T.mat
-Data/A02T.mat
-Data/A03T.mat
-Data/A04T.mat
-Data/A05T.mat
-Data/A06T.mat
-Data/A07T.mat
-Data/A08T.mat
-Data/A09T.mat
