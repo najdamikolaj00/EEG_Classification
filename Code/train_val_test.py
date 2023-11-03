@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-from Dataset import BCIDataset
+from BCIDataset import BCIDataset
 from LSTM import LSTMModel
 
 def train_val_test(device, num_epochs, num_splits, batch_size):

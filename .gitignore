@@ -3,3 +3,4 @@ Data
 Additional_Files
 __pycache__
 /Code/RNN_Classifier/mlruns/
+.vscode
