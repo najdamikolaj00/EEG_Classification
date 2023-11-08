@@ -16,20 +16,22 @@ import torch.nn.functional as F
 class ATCNet(nn.Module):
     def __init__(
         self,
+        in_samples=1125,
         in_chans=22,
-        num_classes=4,
+        n_classes=4,
         n_windows=5,
         eegn_F1=16,
+        eegn_D=2,
         eegn_kernelSize=64,
         eegn_poolSize=8,
         eegn_dropout=0.3,
         tcn_kernelSize=5,  # TODO: changed to an odd number
         tcn_filters=32,
         tcn_depth=2,
-        D=2,
         tcn_dropout=0.3,
         tcn_activation="relu",
         fuse="average",
+        attention="mha",
     ):
         super(ATCNet, self).__init__()
         self.conv_block = ConvBlock(
@@ -37,19 +39,20 @@ class ATCNet(nn.Module):
             F1=eegn_F1,
             kernLength=eegn_kernelSize,
             poolSize=eegn_poolSize,
-            D=D,
+            D=eegn_D,
             dropout=eegn_dropout,
         )
         self.tcn_block = TCNBlock(  # TODO: doubt about input layer here
             input_layer=tcn_filters,
-            input_dimension=eegn_F1 * D,
+            input_dimension=eegn_F1 * eegn_D,
             depth=tcn_depth,
             kernel_size=tcn_kernelSize,
             dropout=tcn_dropout,
             filters=tcn_filters,
         )
+        # self.attention_block = MhaBlock()
         self.n_windows = n_windows
-        self.dense = nn.Linear(tcn_filters, num_classes)
+        self.dense = nn.Linear(tcn_filters, n_classes)
         self.fuse = fuse
 
     def forward(self, x):
@@ -61,6 +64,9 @@ class ATCNet(nn.Module):
             end = x.shape[2] - self.n_windows + st + 1
 
             block = x[:, :, st:end]
+
+            if hasattr(self, "attention"):
+                block = self.attention_block(block)
             block = self.tcn_block(block)
             block = block[:, :, -1]
             block = self.dense(block)
@@ -208,3 +214,24 @@ class TCNBlock(nn.Module):
         for layer in self.layers2:
             x = layer(x)
         return x
+
+
+class MhaBlock(nn.Module):
+    def __init__(
+        self, normalized_shape=(2, 32, 16), epsilon=1e-6, num_heads=2, dropout=0.5
+    ):
+        super().__init__()
+        self.normalization = nn.LayerNorm(
+            normalized_shape=normalized_shape, eps=epsilon
+        )
+        self.mha = nn.MultiheadAttention(
+            embed_dim=normalized_shape[-1], num_heads=num_heads, dropout=dropout
+        )
+        self.dropout = nn.Dropout(0.3)
+
+    def forward(self, x):
+        initial = x
+        x = self.normalization(x)
+        x = self.mha(x, x, x)
+        x = self.dropout(x)
+        return x + initial
