@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -6,6 +7,8 @@ from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 
 from Code.BCIDataset import BCIDataset
+from Code.pre_processing.classes.ClassTrails import ClassTrails
+from Code.pre_processing.csp import gen_csp
 
 
 def train_val_test(
@@ -21,6 +24,13 @@ def train_val_test(
             "Data/A01T.mat",
         ]
     )
+    class_trails = tuple(
+        ClassTrails(
+            class_, train_dataset.X[np.where(train_dataset.y == class_)][:, -1, :, :]
+        )
+        for class_ in range(4)
+    )
+    csp_applier = gen_csp(class_trails)
     # print(train_dataset.__len__())
     # train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
 
@@ -61,6 +71,7 @@ def train_val_test(
             for batch_idx, (data, targets) in enumerate(train_loader):
                 targets = targets.to(device)
                 data = data.to(device)
+                csp_results = tuple(map(csp_applier.apply, data))
 
                 optimizer.zero_grad()
 
