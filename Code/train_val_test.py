@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from Code.BCIDataset import BCIDataset
 from Code.pre_processing.classes.ClassTrails import ClassTrails
 from Code.pre_processing.csp import gen_csp
+from Code.pre_processing.sax import get_sax
 
 
 def train_val_test(
@@ -71,6 +72,7 @@ def train_val_test(
             for batch_idx, (data, targets) in enumerate(train_loader):
                 targets = targets.to(device)
                 data = data.to(device)
+                get_sax(data, 100)
                 csp_results = tuple(map(csp_applier.apply, data))
 
                 optimizer.zero_grad()
