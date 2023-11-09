@@ -9,6 +9,10 @@ import scipy.io as sio
 from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
 
+from Code.pre_processing.bandpass import bandpass
+from Code.pre_processing.csp import gen_csp
+from Code.pre_processing.izoelectric_line_removal import izoelectric_line_removal
+
 
 class BCIDataset(Dataset):
     def __init__(self, data_paths, is_standard=True):
@@ -113,7 +117,12 @@ class BCIDataset(Dataset):
                 class_return[NO_valid_trial] = int(a_y[trial])
                 NO_valid_trial += 1
 
-        return data_return[:NO_valid_trial, :, :], class_return[:NO_valid_trial]
+        return (
+            bandpass(
+                izoelectric_line_removal(data_return[:NO_valid_trial, :, :]), 4, 30, 250
+            ),
+            class_return[:NO_valid_trial],
+        )
 
     def standardize_data(self, X):
         """
