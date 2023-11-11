@@ -6,11 +6,11 @@ from Code.train_val_test import train_val_test
 from constants import ModelType
 
 if __name__ == "__main__":
-    model_type = ModelType.LSTM
+    model_type = ModelType.ATC_NET
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Hyperparameters, loop
-    num_epochs = 1
+    num_epochs = 10
     batch_size = 2
     num_splits = 5
 
@@ -30,7 +30,7 @@ if __name__ == "__main__":
             num_classes=num_classes,
         )
     elif model_type == ModelType.ATC_NET:
-        model = ATCNet(eegn_poolSize=7, num_classes=num_classes)
+        model = ATCNet(eegn_poolSize=7, n_classes=num_classes)
     else:
         raise ValueError(f"No such {model_type=}")
     train_val_test(device, model, num_epochs, num_splits, batch_size, lr)
