@@ -9,20 +9,22 @@ from LSTM import LSTMModel
 from BCIDataset import BCIDataset
 
 def train_val_test(device, model, num_epochs, num_splits, batch_size, learning_rate):
-    train_dataset = BCIDataset(data_paths=["Data/A01T.mat"])
+    train_dataset = BCIDataset(data_paths=["Data/A01T.mat", "Data/A02T.mat", "Data/A03T.mat", 
+                          "Data/A04T.mat", "Data/A05T.mat", "Data/A06T.mat",
+                          "Data/A07T.mat", "Data/A08T.mat", "Data/A09T.mat"])
 
-    print(train_dataset.__len__())
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
+    # print(train_dataset.__len__())
+    # train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
 
-    for idx, (data, label) in enumerate(train_dataloader):
-        print(data)
-        print(label)
-        print(data.shape)
-        print(label.shape)
-        print(data.dtype)
-        print(label.dtype)
-        if idx == 0:
-            break
+    # for idx, (data, label) in enumerate(train_dataloader):
+    #     print(data)
+    #     print(label)
+    #     print(data.shape)
+    #     print(label.shape)
+    #     print(data.dtype)
+    #     print(label.dtype)
+    #     if idx == 0:
+    #         break
     kf = KFold(n_splits=num_splits, shuffle=True, random_state=42)
 
     for fold, (train_idx, val_idx) in enumerate(kf.split(train_dataset)):
@@ -98,7 +100,9 @@ def train_val_test(device, model, num_epochs, num_splits, batch_size, learning_r
         print(f"Validation F1 Score: {f1:.2f}")
 
     # Test loop
-    test_dataset = BCIDataset(data_paths=["Data/A01E.mat"])
+    test_dataset = BCIDataset(data_paths=["Data/A01E.mat", "Data/A02E.mat", "Data/A03E.mat", 
+                          "Data/A04E.mat", "Data/A05E.mat", "Data/A06E.mat",
+                          "Data/A07E.mat", "Data/A08E.mat", "Data/A09E.mat"] )
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     model.eval()
@@ -131,8 +135,8 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Hyperparameters, loop
-    num_epochs = 10
-    batch_size = 2
+    num_epochs = 50
+    batch_size = 64
     num_splits = 5
 
     # Hyperparameters, model
