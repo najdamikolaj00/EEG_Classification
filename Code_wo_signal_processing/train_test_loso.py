@@ -34,7 +34,6 @@ def train_test_loso(device, model, num_epochs, batch_size, learning_rate):
                 data = data.to(device)
 
                 optimizer.zero_grad()
-
                 outputs = model(data)
                 loss = criterion(outputs.float(), targets.long())
 
@@ -87,8 +86,9 @@ if __name__ == "__main__":
     batch_size = 64
 
     # Hyperparameters, model
-    input_size = 22  # Number of channels in the input data
-    hidden_size = 128
+    input_size = 1125  # Number of time points
+    num_channels = 22  # Number of EEG channels
+    hidden_size = 64
     num_layers = 3
 
     num_classes = 4
