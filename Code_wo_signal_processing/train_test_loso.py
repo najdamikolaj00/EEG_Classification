@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from torch.utils.data import DataLoader
 
 from LSTM import LSTMModel
+from CNN_LSTM import CNNLSTMModel
 from BCIDataset import BCIDataset
 
 def train_test_loso(device, model, num_epochs, batch_size, learning_rate):
@@ -94,7 +95,13 @@ if __name__ == "__main__":
     num_classes = 4
     lr = 0.001
 
-    model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
+    # Specify the kernel size for the convolutional layer
+    kernel_size = 3
+
+    # Instantiate the model
+    model = CNNLSTMModel(num_channels, hidden_size, num_layers, num_classes, kernel_size)
+
+    #model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
     model.to(device)
 
     train_test_loso(device, model, num_epochs, batch_size, lr)
