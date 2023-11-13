@@ -143,7 +143,7 @@ if __name__ == "__main__":
     input_size = 1125  # Number of time points
     num_channels = 22  # Number of EEG channels
     hidden_size = 64
-    num_layers = 2
+    num_layers = 4
 
     num_classes = 4
     lr = 0.001

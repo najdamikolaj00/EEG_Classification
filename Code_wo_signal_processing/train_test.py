@@ -6,6 +6,7 @@ from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 
 from LSTM import LSTMModel
+from CNN_LSTM import CNNLSTMModel
 from BCIDataset import BCIDataset
 
 def train_test(device, model, num_epochs, batch_size, learning_rate):
@@ -73,19 +74,25 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Hyperparameters, loop
-    num_epochs = 100
+    num_epochs = 1000
     batch_size = 64
 
     # Hyperparameters, model
     input_size = 1125  # Number of time points
     num_channels = 22  # Number of EEG channels
-    
-    hidden_size = 128
-    num_layers = 3
+    hidden_size = 64
+    num_layers = 2
 
     num_classes = 4
-    lr = 0.001
+    lr = 0.0001
 
-    model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
+    # Specify the kernel size for the convolutional layer
+    kernel_size = 3
+
+    # Instantiate the model
+    model = CNNLSTMModel(num_channels, hidden_size, num_layers, num_classes, kernel_size)
+
+    #model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
+    model.to(device)
 
     train_test(device, model, num_epochs, batch_size, lr)
