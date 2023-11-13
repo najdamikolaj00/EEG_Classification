@@ -123,7 +123,11 @@ def train_val_test(
         print(f"Validation F1 Score: {f1:.2f}")
 
     # Test loop
-    test_dataset = BCIDataset(data_paths=["Data/A01E.mat", "Data/A02E.mat"])
+    test_dataset = BCIDataset(
+        data_paths=[
+            "Data/A01E.mat",
+        ]
+    )
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     model.eval()
