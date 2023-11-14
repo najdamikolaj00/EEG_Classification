@@ -2,12 +2,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 
-from LSTM import LSTMModel
-from CNN_LSTM import CNNLSTMModel
+from models.CNN_LSTM import CNNLSTMModel
 from BCIDataset import BCIDataset
+
 
 def train_test(device, model, num_epochs, batch_size, learning_rate):
     train_dataset = BCIDataset(data_paths=["Data/A01T.mat"])
@@ -36,7 +35,9 @@ def train_test(device, model, num_epochs, batch_size, learning_rate):
             current_loss += loss.item()
 
             if (batch_idx + 1) % 2 == 0:
-                print(f"Epoch [{epoch + 1}/{num_epochs}], Step [{batch_idx + 1}/{len(train_dataloader)}], Loss: {loss.item():.4f}")
+                print(
+                    f"Epoch [{epoch + 1}/{num_epochs}], Step [{batch_idx + 1}/{len(train_dataloader)}], Loss: {loss.item():.4f}"
+                )
                 current_loss = 0
 
     print("Training process has finished.")
@@ -70,6 +71,7 @@ def train_test(device, model, num_epochs, batch_size, learning_rate):
     print(f"Test Recall: {recall:.2f}")
     print(f"Test F1 Score: {f1:.2f}")
 
+
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -90,9 +92,11 @@ if __name__ == "__main__":
     kernel_size = 3
 
     # Instantiate the model
-    model = CNNLSTMModel(num_channels, hidden_size, num_layers, num_classes, kernel_size)
+    model = CNNLSTMModel(
+        num_channels, hidden_size, num_layers, num_classes, kernel_size
+    )
 
-    #model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
+    # model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
     model.to(device)
 
     train_test(device, model, num_epochs, batch_size, lr)

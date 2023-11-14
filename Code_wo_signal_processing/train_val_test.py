@@ -5,13 +5,24 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 
-from LSTM import LSTMModel
+from models.LSTM import LSTMModel
 from BCIDataset import BCIDataset
 
+
 def train_val_test(device, model, num_epochs, num_splits, batch_size, learning_rate):
-    train_dataset = BCIDataset(data_paths=["Data/A01T.mat", "Data/A02T.mat", "Data/A03T.mat", 
-                          "Data/A04T.mat", "Data/A05T.mat", "Data/A06T.mat",
-                          "Data/A07T.mat", "Data/A08T.mat", "Data/A09T.mat"])
+    train_dataset = BCIDataset(
+        data_paths=[
+            "Data/A01T.mat",
+            "Data/A02T.mat",
+            "Data/A03T.mat",
+            "Data/A04T.mat",
+            "Data/A05T.mat",
+            "Data/A06T.mat",
+            "Data/A07T.mat",
+            "Data/A08T.mat",
+            "Data/A09T.mat",
+        ]
+    )
 
     # print(train_dataset.__len__())
     # train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
@@ -35,10 +46,12 @@ def train_val_test(device, model, num_epochs, num_splits, batch_size, learning_r
         val_subsampler = torch.utils.data.SubsetRandomSampler(val_idx)
 
         # Define data loaders for training and validation data in this fold
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, 
-                                  sampler=train_subsampler)
-        val_loader = DataLoader(train_dataset, batch_size=batch_size, 
-                                sampler=val_subsampler)
+        train_loader = DataLoader(
+            train_dataset, batch_size=batch_size, sampler=train_subsampler
+        )
+        val_loader = DataLoader(
+            train_dataset, batch_size=batch_size, sampler=val_subsampler
+        )
 
         model = model.to(device)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -100,9 +113,19 @@ def train_val_test(device, model, num_epochs, num_splits, batch_size, learning_r
         print(f"Validation F1 Score: {f1:.2f}")
 
     # Test loop
-    test_dataset = BCIDataset(data_paths=["Data/A01E.mat", "Data/A02E.mat", "Data/A03E.mat", 
-                          "Data/A04E.mat", "Data/A05E.mat", "Data/A06E.mat",
-                          "Data/A07E.mat", "Data/A08E.mat", "Data/A09E.mat"] )
+    test_dataset = BCIDataset(
+        data_paths=[
+            "Data/A01E.mat",
+            "Data/A02E.mat",
+            "Data/A03E.mat",
+            "Data/A04E.mat",
+            "Data/A05E.mat",
+            "Data/A06E.mat",
+            "Data/A07E.mat",
+            "Data/A08E.mat",
+            "Data/A09E.mat",
+        ]
+    )
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
     model.eval()
@@ -148,7 +171,6 @@ if __name__ == "__main__":
     num_classes = 4
     lr = 0.001
 
-    model = LSTMModel(input_size, hidden_size, num_layers, 
-                      num_classes)
+    model = LSTMModel(input_size, hidden_size, num_layers, num_classes)
 
     train_val_test(device, model, num_epochs, num_splits, batch_size, lr)

@@ -4,8 +4,8 @@ Reference: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 
 import torch.nn as nn
 
-from Code.RNN_Classifier.layers import rnn_layer, Conv1dLayers
-from Code.RNN_Classifier.utils import calc_conv_output_length
+from RNN_Classifier.layers import rnn_layer, Conv1dLayers
+from RNN_Classifier.utils import calc_conv_output_length
 
 
 class BinaryRNNClassifier(nn.Module):

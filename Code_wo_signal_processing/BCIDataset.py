@@ -8,8 +8,11 @@ import scipy.io as sio
 from torch.utils.data import Dataset
 from sklearn.preprocessing import StandardScaler
 
+from pre_processing.Preprocessor import Preprocessor, default_preprocessor
+
+
 class BCIDataset(Dataset):
-    def __init__(self, data_paths, is_standard=True):
+    def __init__(self, data_paths, preprocessor: Preprocessor = None):
         """
         Custom dataset class for EEG (Electroencephalography) data.
 
@@ -17,13 +20,15 @@ class BCIDataset(Dataset):
             data_path (str): Path to the EEG data file.
             is_standard (bool): Whether to standardize the data. Default is True.
         """
+        if preprocessor is None:
+            preprocessor = default_preprocessor
         self.data_paths = data_paths
         self.X, self.y = [], []
-        self.get_data(is_standard)
+        self.get_data(preprocessor)
         # Subtract 1 from labels for 0-based indexing
         # self.y = (self.y - 1).to(torch.long)
 
-    def get_data(self, is_standard=True):
+    def get_data(self, preprocessor: Preprocessor):
         """
         Load and preprocess EEG data.
 
@@ -51,8 +56,7 @@ class BCIDataset(Dataset):
             X = X[:, :, t1:t2].reshape(self.N, n_channels, self.N_ch, T)
 
             # Standardize the data if required
-            if is_standard:
-                X = self.standardize_data(X)
+            X = preprocessor.preprocess(X)
 
             y = y - 1
             self.X.append(X)
@@ -112,21 +116,6 @@ class BCIDataset(Dataset):
                 NO_valid_trial += 1
 
         return data_return[0:NO_valid_trial, :, :], class_return[0:NO_valid_trial]
-
-    def standardize_data(self, X):
-        """
-        Standardize the data using StandardScaler.
-
-        Returns:
-            np.ndarray: Standardized data.
-        """
-        # X :[Trials, Filters=1, Channels, Time points]
-        for j in range(self.N_ch):
-            scaler = StandardScaler()
-            scaler.fit(X[:, 0, j, :])
-            X[:, 0, j, :] = scaler.transform(X[:, 0, j, :])
-
-        return X
 
     def __len__(self):
         """Get the total number of samples in the dataset."""

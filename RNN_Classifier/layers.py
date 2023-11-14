@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
 
-from Code.RNN_Classifier.utils import calc_conv_output_length, tile
+from RNN_Classifier.utils import calc_conv_output_length, tile
 
 
 def rnn_layer(

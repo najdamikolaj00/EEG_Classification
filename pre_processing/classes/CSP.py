@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from Code.pre_processing.reformat_input import reformat_input
+from pre_processing.reformat_input import reformat_input
 
 
 @dataclass

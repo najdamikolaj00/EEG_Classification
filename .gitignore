@@ -2,6 +2,6 @@ Data
 .venv
 Additional_Files
 __pycache__
-/Code/RNN_Classifier/mlruns/
+/RNN_Classifier/mlruns/
 .vscode
 /_LegacyCode/EEG_ATCNet/

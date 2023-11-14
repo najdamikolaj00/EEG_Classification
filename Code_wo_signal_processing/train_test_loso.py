@@ -4,8 +4,7 @@ import torch.optim as optim
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from torch.utils.data import DataLoader
 
-from LSTM import LSTMModel
-from CNN_LSTM import CNNLSTMModel
+from models.CNN_LSTM import CNNLSTMModel
 from BCIDataset import BCIDataset
 
 

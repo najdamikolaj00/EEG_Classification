@@ -3,7 +3,7 @@ from itertools import chain
 
 from torch import Tensor
 
-from Code.pre_processing.classes.CSP import CSP
+from pre_processing.classes.CSP import CSP
 
 
 @dataclass

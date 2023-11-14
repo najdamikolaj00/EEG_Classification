@@ -1,6 +1,6 @@
 import torch
 
-from Code.ATCNet import ATCNet
+from models.ATCNet import ATCNet
 from Code.LSTM import LSTMModel
 from Code.train_val_test import train_val_test
 from constants import ModelType

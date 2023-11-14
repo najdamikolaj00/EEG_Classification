@@ -4,10 +4,10 @@ from typing import Sequence
 import numpy as np
 from numpy import linalg
 
-from Code.pre_processing.classes.CSP import CSP
-from Code.pre_processing.classes.CSPApplier import CSPApplier
-from Code.pre_processing.classes.ClassTrails import ClassTrails
-from Code.pre_processing.reformat_input import reformat_input
+from pre_processing.classes.CSP import CSP
+from pre_processing.classes.CSPApplier import CSPApplier
+from pre_processing.classes.ClassTrails import ClassTrails
+from pre_processing.reformat_input import reformat_input
 
 
 def cov(trials):

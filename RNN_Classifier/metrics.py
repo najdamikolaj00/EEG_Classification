@@ -1,10 +1,10 @@
 from sklearn.model_selection import train_test_split
 from torch import optim
 
-from Code.RNN_Classifier.models.classifiers import BinaryRNNClassifier
-from Code.RNN_Classifier.samplers import BinaryBalancedSampler, IdentitySampler
-from Code.RNN_Classifier.trainers import BinaryClassificationTrainer
-from Code.RNN_Classifier.utils import numpy_to_cuda
+from RNN_Classifier.models.classifiers import BinaryRNNClassifier
+from RNN_Classifier.samplers import BinaryBalancedSampler, IdentitySampler
+from RNN_Classifier.trainers import BinaryClassificationTrainer
+from RNN_Classifier.utils import numpy_to_cuda
 
 
 def mean_feature_error(X_real, X_synth):

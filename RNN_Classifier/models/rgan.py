@@ -5,7 +5,7 @@ Reference: https://arxiv.org/abs/1706.02633
 import torch.nn as nn
 from torchgan.models import Generator, Discriminator
 
-from Code.RNN_Classifier.layers import rnn_layer
+from RNN_Classifier.layers import rnn_layer
 
 
 class RGANGenerator(Generator):

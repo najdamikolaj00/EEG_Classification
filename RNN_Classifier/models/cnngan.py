@@ -16,8 +16,8 @@ from torch.nn import (
 )
 from torchgan.models import Generator
 
-from Code.RNN_Classifier.layers import View
-from Code.RNN_Classifier.utils import tile
+from RNN_Classifier.layers import View
+from RNN_Classifier.utils import tile
 
 
 class CNNCGANGenerator(Generator):

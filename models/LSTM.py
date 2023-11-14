@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTMModel, self).__init__()
@@ -20,12 +21,11 @@ class LSTMModel(nn.Module):
         ).to(x.device)
 
         batch_size, dimension, num_channels, time_points = x.size()
-        x = x.view(batch_size, time_points, -1)
-
+        x = x.view(batch_size, num_channels * dimension, time_points)
+        # print(x.shape)
         # Forward propagate LSTM
-        out, _ = self.lstm(
-            x, (h0, c0)
-        )  # out: tensor of shape (batch_size, time_points, num_channels*n_dim)
-
+        out, _ = self.lstm(x, (h0, c0))
+        # out: tensor of shape (batch_size, num_channels*n_dim, time_points)
+        # print(out.shape)
         out = self.fc(out[:, -1, :])
         return out

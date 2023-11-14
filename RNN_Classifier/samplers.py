@@ -1,5 +1,5 @@
 import torch
-from Code.RNN_Classifier.utils import tile as tile_func
+from RNN_Classifier.utils import tile as tile_func
 
 
 class IdentitySampler:
